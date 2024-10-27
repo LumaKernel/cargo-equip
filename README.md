@@ -36,7 +36,7 @@ cargo-equip can
 [package]
 name = "library-checker"
 version = "0.0.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 ac-library-rs-parted-modint = { git = "https://github.com/qryxip/ac-library-rs-parted" }
@@ -131,9 +131,11 @@ Install a `nightly` toolchain and [cargo-udeps](https://github.com/est31/cargo-u
 
 Follow these constrants when you writing libraries to bundle.
 
-1. Set `package.edition` to `"2018"`.
+1. Set `package.edition` to `"2018"` or `"2021"`.
 
     `"2015"` is not supported.
+    Newer editions not listed here may not work.
+
 
 2. Do not use procedural macros in `lib` crates.
 

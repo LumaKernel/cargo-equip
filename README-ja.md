@@ -35,7 +35,7 @@
 [package]
 name = "library-checker"
 version = "0.0.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 ac-library-rs-parted-modint = { git = "https://github.com/qryxip/ac-library-rs-parted" }
@@ -130,9 +130,10 @@ mod sub {
 
 `cargo-equip`で展開できるライブラリには以下の制約があります。
 
-1. `edition`は`"2018"`にする。
+1. `edition`は`"2018"`か`"2021"`にする。
 
     `"2015"`はサポートしません。
+    また、より新しいエディションは動作しないかもしれません。
 
 2. `lib`クレートからは手続き型マクロを利用しない。
 
