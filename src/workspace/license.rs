@@ -4,7 +4,6 @@ use crate::{
     User,
 };
 use anyhow::{anyhow, Context as _};
-//use cargo_metadata as cm;
 use cargo_util::ProcessBuilder;
 use krates::cm as kcm;
 use maplit::btreeset;

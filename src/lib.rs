@@ -22,7 +22,6 @@ use crate::{
     },
 };
 use anyhow::Context as _;
-//use cargo_metadata as cm;
 use indoc::indoc;
 use itertools::{iproduct, Itertools as _};
 use krates::cm as kcm;

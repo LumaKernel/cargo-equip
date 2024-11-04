@@ -1,5 +1,4 @@
 use crate::{process::ProcessBuilderExt as _, shell::Shell, toolchain, workspace::TargetExt as _};
-//use cargo_metadata as cm;
 use cargo_util::ProcessBuilder;
 use krates::cm as kcm;
 use serde::Deserialize;

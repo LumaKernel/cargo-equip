@@ -493,7 +493,6 @@ impl MetadataExt for kcm::Metadata {
         let mut deps = nodes[package_id]
             .deps
             .iter()
-            //.filter(|node_dep| satisfies(node_dep, need_dev_deps))
             .filter(|node_dep| {
                 let s = satisfies(node_dep, need_dev_deps);
                 s
@@ -714,7 +713,6 @@ impl PackageExt for kcm::Package {
     }
 
     fn lib_like_target(&self) -> Option<&kcm::Target> {
-        //self.targets.iter().find(|cm::Target { kind, .. }| {
         self.targets
             .iter()
             .find(|target| target.is_lib() || target.is_proc_macro())
