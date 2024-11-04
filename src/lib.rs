@@ -692,7 +692,6 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
                 }
             }
         };
-        dbg!(&unused_deps);
         let mut libs_to_bundle =
             metadata.libs_to_bundle(&root_package.id, root.is_example(), unused_deps, &exclude)?;
         if root.is_lib() {
@@ -700,7 +699,6 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
         }
         libs_to_bundle
     };
-    dbg!(&libs_to_bundle);
 
     let error_message = |head: &str| {
         let mut msg = head.to_owned();
@@ -795,8 +793,6 @@ fn bundle(
 
     let active_toolchain = &*toolchain::active_toolchain(root_crate.package().manifest_dir())?;
     let toolchain_for_proc_macro_srv = toolchain_for_proc_macro_srv.unwrap_or(active_toolchain);
-    dbg!(&active_toolchain);
-    dbg!(&toolchain_for_proc_macro_srv);
 
     let has_custom_build = libs_to_bundle
         .keys()
@@ -805,11 +801,9 @@ fn bundle(
 
     let (cargo_messages_for_out_dirs, cargo_messages_for_proc_macro_dll_paths) =
         if has_custom_build && has_proc_macro && active_toolchain == toolchain_for_proc_macro_srv {
-            dbg!(1);
             let cargo_messages = cargo_check_message_format_json(active_toolchain, shell)?;
             (cargo_messages.clone(), Some(cargo_messages))
         } else {
-            dbg!(2);
             let cargo_messages_for_out_dirs = has_custom_build
                 .then(|| cargo_check_message_format_json(active_toolchain, shell))
                 .unwrap_or_else(|| Ok(Default::default()))?;
