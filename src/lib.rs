@@ -1,4 +1,5 @@
-#![forbid(unsafe_code)]
+// TODO: unsafe
+//#![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
 #![recursion_limit = "256"]
 
@@ -21,9 +22,10 @@ use crate::{
     },
 };
 use anyhow::Context as _;
-use cargo_metadata as cm;
+//use cargo_metadata as cm;
 use indoc::indoc;
 use itertools::{iproduct, Itertools as _};
+use krates::cm as kcm;
 use krates::PkgSpec;
 use maplit::{btreeset, hashmap, hashset};
 use petgraph::{
@@ -133,6 +135,19 @@ pub struct OptEquip {
         ))
     )]
     exclude_atcoder_202301_crates: bool,
+
+    /// Alias for `--exclude {crates available on AtCoder 202410}`
+    #[structopt(
+        long,
+        long_help(Box::leak(
+            format!(
+                "Alias for:\n--exclude {}\n ",
+                ATCODER_202410_CRATES.iter().format("\n          "),
+            )
+            .into_boxed_str(),
+        ))
+    )]
+    exclude_atcoder_202410_crates: bool,
 
     /// Alias for `--exclude {crates available on CodinGame}`
     #[structopt(
@@ -486,6 +501,71 @@ static ATCODER_202301_CRATES: &[&str] = &[
     "https://github.com/rust-lang/crates.io-index#smallvec:1.11.0",
 ];
 
+static ATCODER_202410_CRATES: &[&str] = &[
+    "https://github.com/rust-lang/crates.io-index#ac-library-rs:0.1.1",
+    "https://github.com/rust-lang/crates.io-index#once_cell:1.18.0",
+    "https://github.com/rust-lang/crates.io-index#static_assertions:1.1.0",
+    "https://github.com/rust-lang/crates.io-index#varisat:0.2.2",
+    "https://github.com/rust-lang/crates.io-index#memoise:0.3.2",
+    "https://github.com/rust-lang/crates.io-index#argio:0.2.0",
+    "https://github.com/rust-lang/crates.io-index#bitvec:1.0.1",
+    "https://github.com/rust-lang/crates.io-index#counter:0.5.7",
+    "https://github.com/rust-lang/crates.io-index#hashbag:0.1.11",
+    "https://github.com/rust-lang/crates.io-index#pathfinding:4.3.0",
+    "https://github.com/rust-lang/crates.io-index#recur-fn:2.2.0",
+    "https://github.com/rust-lang/crates.io-index#indexing:0.4.1",
+    "https://github.com/rust-lang/crates.io-index#amplify:3.14.2",
+    "https://github.com/rust-lang/crates.io-index#amplify_derive:2.11.3",
+    "https://github.com/rust-lang/crates.io-index#amplify_num:0.4.1",
+    "https://github.com/rust-lang/crates.io-index#easy-ext:1.0.1",
+    "https://github.com/rust-lang/crates.io-index#multimap:0.9.0",
+    "https://github.com/rust-lang/crates.io-index#btreemultimap:0.1.1",
+    "https://github.com/rust-lang/crates.io-index#bstr:1.6.0",
+    "https://github.com/rust-lang/crates.io-index#az:1.2.1",
+    "https://github.com/rust-lang/crates.io-index#glidesort:0.1.2",
+    "https://github.com/rust-lang/crates.io-index#tap:1.0.1",
+    "https://github.com/rust-lang/crates.io-index#omniswap:0.1.0",
+    "https://github.com/rust-lang/crates.io-index#multiversion:0.7.2",
+    "https://github.com/rust-lang/crates.io-index#num:0.4.1",
+    "https://github.com/rust-lang/crates.io-index#num-bigint:0.4.3",
+    "https://github.com/rust-lang/crates.io-index#num-complex:0.4.3",
+    "https://github.com/rust-lang/crates.io-index#num-integer:0.1.45",
+    "https://github.com/rust-lang/crates.io-index#num-iter:0.1.43",
+    "https://github.com/rust-lang/crates.io-index#num-rational:0.4.1",
+    "https://github.com/rust-lang/crates.io-index#num-traits:0.2.15",
+    "https://github.com/rust-lang/crates.io-index#num-derive:0.4.0",
+    "https://github.com/rust-lang/crates.io-index#ndarray:0.15.6",
+    "https://github.com/rust-lang/crates.io-index#nalgebra:0.32.3",
+    "https://github.com/rust-lang/crates.io-index#alga:0.9.3",
+    "https://github.com/rust-lang/crates.io-index#libm:0.2.7",
+    "https://github.com/rust-lang/crates.io-index#rand:0.8.5",
+    "https://github.com/rust-lang/crates.io-index#getrandom:0.2.10",
+    "https://github.com/rust-lang/crates.io-index#rand_chacha:0.3.1",
+    "https://github.com/rust-lang/crates.io-index#rand_core:0.6.4",
+    "https://github.com/rust-lang/crates.io-index#rand_hc:0.3.2",
+    "https://github.com/rust-lang/crates.io-index#rand_pcg:0.3.1",
+    "https://github.com/rust-lang/crates.io-index#rand_distr:0.4.3",
+    "https://github.com/rust-lang/crates.io-index#petgraph:0.6.3",
+    "https://github.com/rust-lang/crates.io-index#indexmap:2.0.0",
+    "https://github.com/rust-lang/crates.io-index#regex:1.9.1",
+    "https://github.com/rust-lang/crates.io-index#lazy_static:1.4.0",
+    "https://github.com/rust-lang/crates.io-index#ordered-float:3.7.0",
+    "https://github.com/rust-lang/crates.io-index#ascii:1.1.0",
+    "https://github.com/rust-lang/crates.io-index#permutohedron:0.2.4",
+    "https://github.com/rust-lang/crates.io-index#superslice:1.0.0",
+    "https://github.com/rust-lang/crates.io-index#itertools:0.11.0",
+    "https://github.com/rust-lang/crates.io-index#itertools-num:0.1.3",
+    "https://github.com/rust-lang/crates.io-index#maplit:1.0.2",
+    "https://github.com/rust-lang/crates.io-index#either:1.8.1",
+    "https://github.com/rust-lang/crates.io-index#im-rc:15.1.0",
+    "https://github.com/rust-lang/crates.io-index#fixedbitset:0.4.2",
+    "https://github.com/rust-lang/crates.io-index#bitset-fixed:0.1.0",
+    "https://github.com/rust-lang/crates.io-index#proconio:0.4.5",
+    "https://github.com/rust-lang/crates.io-index#text_io:0.1.12",
+    "https://github.com/rust-lang/crates.io-index#rustc-hash:1.1.0",
+    "https://github.com/rust-lang/crates.io-index#smallvec:1.11.0",
+];
+
 static CODINGAME_CRATES: &[&str] = &[
     "https://github.com/rust-lang/crates.io-index#chrono:0.4.19",
     "https://github.com/rust-lang/crates.io-index#itertools:0.10.0",
@@ -505,6 +585,7 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
         exclude,
         exclude_atcoder_crates,
         exclude_atcoder_202301_crates,
+        exclude_atcoder_202410_crates,
         exclude_codingame_crates,
         mine,
         toolchain: deprecated_toolchain_opt,
@@ -535,6 +616,9 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
         }
         if exclude_atcoder_202301_crates {
             exclude.extend(ATCODER_202301_CRATES.iter().map(|s| s.parse().unwrap()));
+        }
+        if exclude_atcoder_202410_crates {
+            exclude.extend(ATCODER_202410_CRATES.iter().map(|s| s.parse().unwrap()));
         }
         if exclude_codingame_crates {
             exclude.extend(CODINGAME_CRATES.iter().map(|s| s.parse().unwrap()));
@@ -608,6 +692,7 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
                 }
             }
         };
+        dbg!(&unused_deps);
         let mut libs_to_bundle =
             metadata.libs_to_bundle(&root_package.id, root.is_example(), unused_deps, &exclude)?;
         if root.is_lib() {
@@ -615,6 +700,7 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
         }
         libs_to_bundle
     };
+    dbg!(&libs_to_bundle);
 
     let error_message = |head: &str| {
         let mut msg = head.to_owned();
@@ -688,9 +774,9 @@ pub fn run(opt: Opt, ctx: Context<'_>) -> anyhow::Result<()> {
 
 #[allow(clippy::too_many_arguments)]
 fn bundle(
-    metadata: &cm::Metadata,
+    metadata: &kcm::Metadata,
     root_crate: RootCrate<'_>,
-    libs_to_bundle: &BTreeMap<&cm::PackageId, (&cm::Target, String)>,
+    libs_to_bundle: &BTreeMap<&kcm::PackageId, (&kcm::Target, String)>,
     mine: &[User],
     cargo_equip_mod_name: &syn::Ident,
     resolve_cfgs: bool,
@@ -709,6 +795,8 @@ fn bundle(
 
     let active_toolchain = &*toolchain::active_toolchain(root_crate.package().manifest_dir())?;
     let toolchain_for_proc_macro_srv = toolchain_for_proc_macro_srv.unwrap_or(active_toolchain);
+    dbg!(&active_toolchain);
+    dbg!(&toolchain_for_proc_macro_srv);
 
     let has_custom_build = libs_to_bundle
         .keys()
@@ -717,9 +805,11 @@ fn bundle(
 
     let (cargo_messages_for_out_dirs, cargo_messages_for_proc_macro_dll_paths) =
         if has_custom_build && has_proc_macro && active_toolchain == toolchain_for_proc_macro_srv {
+            dbg!(1);
             let cargo_messages = cargo_check_message_format_json(active_toolchain, shell)?;
             (cargo_messages.clone(), Some(cargo_messages))
         } else {
+            dbg!(2);
             let cargo_messages_for_out_dirs = has_custom_build
                 .then(|| cargo_check_message_format_json(active_toolchain, shell))
                 .unwrap_or_else(|| Ok(Default::default()))?;
@@ -746,8 +836,20 @@ fn bundle(
 
             let proc_macro_crate_dylibs = &ra_proc_macro::list_proc_macro_dylibs(
                 cargo_messages_for_proc_macro_dll_paths,
-                |p| libs_to_bundle.contains_key(p),
-            );
+                |p| {
+                    let p = kcm::PackageId {
+                        repr: p.repr.clone(),
+                    };
+                    libs_to_bundle.contains_key(&p)
+                },
+            )
+            .into_iter()
+            .map(|(p, v)| {
+                // TODO: unsafe
+                let p = unsafe { std::mem::transmute::<&_, &kcm::PackageId>(p) };
+                (p, v)
+            })
+            .collect::<BTreeMap<_, _>>();
 
             ProcMacroExpander::spawn(proc_macro_srv_exe, proc_macro_crate_dylibs)
         })
@@ -772,7 +874,7 @@ fn bundle(
     let resolve_nodes = metadata
         .resolve
         .as_ref()
-        .map(|cm::Resolve { nodes, .. }| &nodes[..])
+        .map(|kcm::Resolve { nodes, .. }| &nodes[..])
         .unwrap_or(&[])
         .iter()
         .map(|node| (&node.id, node))
@@ -881,10 +983,10 @@ fn bundle(
         .into_iter()
         .map(
             |(lib_package, (lib_target, pseudo_extern_crate_name, mut edit))| {
-                let lib_package: &cm::Package = &metadata[lib_package];
+                let lib_package: &kcm::Package = &metadata[lib_package];
 
                 if let Some(names) = proc_macro_names.get(&lib_package.id) {
-                    debug_assert_eq!(["proc-macro".to_owned()], *lib_target.kind);
+                    debug_assert_eq!([kcm::TargetKind::ProcMacro], *lib_target.kind);
                     let names = names
                         .iter()
                         .map(|name| {
@@ -935,7 +1037,7 @@ fn bundle(
                     ));
                 }
 
-                let cm::Node { features, .. } = resolve_nodes[&lib_package.id];
+                let kcm::Node { features, .. } = resolve_nodes[&lib_package.id];
 
                 let translate_extern_crate_name = |dst: &_| -> _ {
                     let dst_package =
@@ -999,7 +1101,7 @@ fn bundle(
                 ))
             },
         )
-        .collect::<anyhow::Result<Vec<(&str, (&cm::Package, String, String, String))>>>()?;
+        .collect::<anyhow::Result<Vec<(&str, (&kcm::Package, String, String, String))>>>()?;
 
     if !libs.is_empty() {
         if !root_crate.package().authors.is_empty() {
@@ -1024,7 +1126,7 @@ fn bundle(
                 doc: &mut String,
                 title: &str,
                 cargo_equip_mod_name: &syn::Ident,
-                contents: impl Iterator<Item = (Option<&'a str>, &'a cm::Package)>,
+                contents: impl Iterator<Item = (Option<&'a str>, &'a kcm::Package)>,
             ) {
                 let mut table = Table::new();
 
@@ -1268,7 +1370,7 @@ fn bundle(
         code = rustfmt::rustfmt(
             &metadata.workspace_root,
             &code,
-            &root_crate.package().edition,
+            root_crate.package().edition.as_str(),
         )?;
     }
 
@@ -1276,11 +1378,11 @@ fn bundle(
 }
 
 fn normal_non_host_dep_graph<'cm>(
-    resolve_nodes: &HashMap<&'cm cm::PackageId, &cm::Node>,
-    libs_to_bundle: &BTreeMap<&'cm cm::PackageId, (&cm::Target, String)>,
+    resolve_nodes: &HashMap<&'cm kcm::PackageId, &kcm::Node>,
+    libs_to_bundle: &BTreeMap<&'cm kcm::PackageId, (&kcm::Target, String)>,
 ) -> (
-    Graph<&'cm cm::PackageId, ()>,
-    HashMap<&'cm cm::PackageId, NodeIndex>,
+    Graph<&'cm kcm::PackageId, ()>,
+    HashMap<&'cm kcm::PackageId, NodeIndex>,
 ) {
     let mut graph = Graph::new();
     let mut indices = hashmap!();
@@ -1289,14 +1391,14 @@ fn normal_non_host_dep_graph<'cm>(
     }
     for (from_pkg, (from_crate, _)) in libs_to_bundle {
         if from_crate.is_lib() {
-            for cm::NodeDep {
+            for kcm::NodeDep {
                 pkg: to, dep_kinds, ..
             } in &resolve_nodes[from_pkg].deps
             {
                 if *from_pkg != to
                     && dep_kinds
                         .iter()
-                        .any(|cm::DepKindInfo { kind, .. }| *kind == cm::DependencyKind::Normal)
+                        .any(|kcm::DepKindInfo { kind, .. }| *kind == kcm::DependencyKind::Normal)
                     && libs_to_bundle.contains_key(to)
                 {
                     graph.add_edge(indices[to], indices[*from_pkg], ());
@@ -1309,24 +1411,24 @@ fn normal_non_host_dep_graph<'cm>(
 
 #[derive(Clone, Copy)]
 enum RootCrate<'cm> {
-    BinLike(&'cm cm::Package, &'cm cm::Target),
-    Lib(&'cm cm::Package, &'cm cm::Target),
+    BinLike(&'cm kcm::Package, &'cm kcm::Target),
+    Lib(&'cm kcm::Package, &'cm kcm::Target),
 }
 
 impl<'cm> RootCrate<'cm> {
-    fn split(self) -> (&'cm cm::Package, &'cm cm::Target) {
+    fn split(self) -> (&'cm kcm::Package, &'cm kcm::Target) {
         match self {
             RootCrate::BinLike(p, t) | RootCrate::Lib(p, t) => (p, t),
         }
     }
 
-    fn package(self) -> &'cm cm::Package {
+    fn package(self) -> &'cm kcm::Package {
         match self {
             RootCrate::BinLike(p, _) | RootCrate::Lib(p, _) => p,
         }
     }
 
-    fn bin_like(self) -> Option<(&'cm cm::Package, &'cm cm::Target)> {
+    fn bin_like(self) -> Option<(&'cm kcm::Package, &'cm kcm::Target)> {
         match self {
             RootCrate::BinLike(p, t) => Some((p, t)),
             RootCrate::Lib(..) => None,
